@@ -80,6 +80,11 @@ def main():
             if (params.save_per_iter != -1) and (epoch != 0) and (epoch % params.save_per_iter == 0):
                 to_save = params.output_path+ args[2]+'_model_iter_' + str(epoch) + '.pt'
                 t.save(model.state_dict(), to_save)
+                validation_batch = get_batch(len(indexed_dev_data), indexed_dev_data, params.corrupt_size, option='val')
+                score = model(validation_batch, eval=True)
+                _, th = get_best_thresholds(score)
+                np.save(params.output_path + '/thresholds_' + str(args[2]) + '_model_iter_'+ str(epoch)+'.npy', np.array(th))
+                print '...............Model succesfully saved!'
 
             if (params.val_iter != -1) and (epoch != 0) and (epoch % params.val_iter == 0):
                 validation_batch=get_batch(len(indexed_dev_data),indexed_dev_data,params.corrupt_size,option='val')
@@ -113,7 +118,7 @@ def main():
                 thresholds=np.array(th)
         to_save =params.output_path+ args[2]+'_model_final.pt'
         t.save(model.state_dict(), to_save)
-        np.save(params.output_path + '/thresholds_' + str(args[2]) + '.npy', thresholds)
+        np.save(params.output_path + '/thresholds_' + args[2] + '_model_final.npy', thresholds)
 
     elif len(args) == 3 and args[1] == 'test':
         print '-------------------- STARTING DATA PROCESSING --------------------'
@@ -156,8 +161,9 @@ def main():
         a=t.load(params.output_path+args[2]+'.pt')
         model.load_state_dict(a)
         # model=t.load(params.output_path+args[2]+'.pt')
-        th_name=str(args[2]).split('_')
-        th_name='_'.join(th_name[:th_name.index('model')])
+        # th_name=str(args[2]).split('_')
+        # th_name='_'.join(th_name[:th_name.index('model')])
+        th_name=args[2]
         thresholds=np.load(params.output_path + '/thresholds_' + th_name + '.npy')
         print '-------------------- TESTING DATA --------------------'
         test_batch = get_batch(len(indexed_test_data), indexed_test_data, params.corrupt_size,
