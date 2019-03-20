@@ -1,0 +1,7 @@
+_member_meronym
+_member_holonym
+_part_of
+_has_part
+_domain_region
+_synset_domain_topic
+_domain_topic

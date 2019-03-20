@@ -1,0 +1,6 @@
+nationality
+profession
+institution
+cause_of_death
+religion
+ethnicity
