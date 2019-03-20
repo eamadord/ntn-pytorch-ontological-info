@@ -17,6 +17,7 @@ embeds_string = '/initEmbed.mat'
 training_string = '/train.txt'
 test_string = '/test.txt'
 dev_string = '/dev.txt'
+fresh_test_string='/test_fresh.txt'
 
 def save_obj(obj, name ):
     with open(name + '.pkl', 'wb') as f:
@@ -76,6 +77,11 @@ def load_dev_data(data_path=params.data_path):
 
 def load_test_data(data_path=params.data_path):
     test_file = open(data_path + test_string)
+    test_data = [line.split('\t') for line in test_file.read().strip().split('\n')]
+    return np.array(test_data)
+
+def load_fresh_test_data(data_path=params.data_path):
+    test_file = open(data_path + fresh_test_string)
     test_data = [line.split('\t') for line in test_file.read().strip().split('\n')]
     return np.array(test_data)
 

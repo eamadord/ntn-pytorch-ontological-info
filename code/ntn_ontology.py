@@ -143,6 +143,11 @@ def main():
         test_data = load_test_data(params.data_path)
         print '...............Indexing test data'
         indexed_test_data = data_to_indexed(test_data, entities_list, relations_list, val=True)
+        if params.fresh_entities:
+            print '...............Loading fresh entities test data'
+            fresh_test_data = load_fresh_test_data(params.data_path)
+            print '...............Indexing fresh entities test data'
+            fresh_indexed_test_data = data_to_indexed(fresh_test_data, entities_list, relations_list, val=True)
         print '-------------------- LOADING NTN MODEL --------------------'
         if params.ontological_info:
             model=NeuralTensorLayer(params.embedding_size, params.slice_size, num_relations, entEmbed,ont_info=True,ont_matrix=ont_info,train_embeddings=params.train_embeddings)
@@ -186,6 +191,38 @@ def main():
         print 'TOTAL METRICS :'
         get_metrics(all_predictions, all_labels)
 
+        if params.fresh_entities:
+            print '-------------------- TESTING DATA WITH FRESH ENTITIES--------------------'
+            test_batch = get_batch(len(fresh_indexed_test_data), fresh_indexed_test_data, params.corrupt_size,
+                                   option='val')
+            total_score = []
+            values = model(test_batch, eval=True)
+            r = 0
+            all_predictions = []
+            all_labels = []
+            for element in values:
+                if element is None:
+                    print 'No metrics for relation ' + str(relations_list[r])
+                else:
+                    scores = element[0, :]
+                    labels = element[1, :]
+                    scores = np.squeeze(np.array(scores))
+                    print '..............Evaluating triplets for relation ' + str(r)
+                    predictions = (scores >= thresholds[r]) * 2 - 1
+                    all_predictions = np.append(all_predictions, predictions)
+                    all_labels = np.append(all_labels, labels)
+                    labels = np.squeeze(np.array(labels))
+                    temp_accuracy = np.mean(predictions == labels)
+                    total_score.append(temp_accuracy)
+                    print 'Metrics for relation \"' + str(relations_list[r]) + '\": '
+                    get_metrics(predictions, labels)
+                    # print 'ACCURACY OF RELATION ' + str(r) + ' IS ' + str(temp_accuracy)
+                r += 1
+                print '..............................'
+            print '-----------------------------------------------'
+            # print 'TOTAL ACCURACY ' + str(np.mean(total_score))
+            print 'TOTAL METRICS :'
+            get_metrics(all_predictions, all_labels)
 
 
 
